@@ -4,7 +4,12 @@ from supabase import create_client, Client
 from datetime import date, datetime, timezone
 from typing import Optional
 import os
+import logging
+
 from fastapi.middleware.cors import CORSMiddleware
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="President API")
 
@@ -56,12 +61,14 @@ class PresidentUpdate(BaseModel):
 
 @app.get("/")
 async def root():
+    logger.info("Root endpoint called")    
     response = supabase.table("president").select("*", count="exact").execute()
+    logger.info(f"President count: {response.count}")
     return {
         "message": "President API is running",
         "president_count": response.count
     }
-
+    
 
 @app.get("/presidents")
 async def list_presidents():
@@ -86,7 +93,9 @@ async def get_president(president_id: int):
     )
 
     if not response.data:
+        logger.exception(f"Get a President by ID: failed")
         raise HTTPException(status_code=404, detail="President not found")
+        
 
     return response.data[0]
 
@@ -103,8 +112,10 @@ async def create_president(president: PresidentCreate):
     response = supabase.table("president").insert(payload).execute()
 
     if not response.data:
+        logger.exception(f"President creation failed:")
         raise HTTPException(status_code=400, detail="Failed to create president")
-
+        
+    logger.info(f"President created: {response.data[0]}")
     return response.data[0]
 
 
