@@ -92,7 +92,9 @@ async def get_president(president_id: int):
     )
 
     if not response.data:
+        logger.exception(f"Get a President by ID: failed")
         raise HTTPException(status_code=404, detail="President not found")
+        
 
     return response.data[0]
 
@@ -109,8 +111,9 @@ async def create_president(president: PresidentCreate):
     response = supabase.table("president").insert(payload).execute()
 
     if not response.data:
-        raise HTTPException(status_code=400, detail="Failed to create president")
         logger.exception(f"President creation failed:")
+        raise HTTPException(status_code=400, detail="Failed to create president")
+        
     logger.info(f"President created: {response.data[0]}")
     return response.data[0]
 
