@@ -84,13 +84,18 @@ async def list_presidents():
 
 @app.get("/presidents/{president_id}")
 async def get_president(president_id: int):
-    response = (
-        supabase
-        .table("president")
-        .select("*")
-        .eq("id", president_id)
-        .execute()
-    )
+    try:
+        response = (
+            supabase
+            .table("president")
+            .select("*")
+            .eq("id", president_id)
+            .execute()
+        )
+
+    except Exception as e:
+        logger.exception("Database error")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
     if not response.data:
         logger.exception(f"Get a President by ID: failed")
